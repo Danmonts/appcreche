@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Diário do Pet - Health Vet Center</title>
   
-  <!-- Ícones do aplicativo -->
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="favicon.ico">
   
@@ -50,13 +49,10 @@
 </head>
 <body>
   
-  <!-- TELA DE BUSCA (LOGIN DO TUTOR) -->
   <div id="tela-login">
     <div class="container">
       <div class="card" style="text-align: center; margin-top: 20px;">
-        <!-- Logotipo em Destaque -->
         <img src="logotipo.png" alt="Health Vet Center" class="hero-logo">
-        
         <h3 style="margin-bottom: 10px; font-size: 1.25rem;">Acompanhamento Diário</h3>
         <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.4;">Bem-vindo ao diário digital do seu pet. Digite o nome dele para ver as atividades de hoje.</p>
         
@@ -68,7 +64,6 @@
     </div>
   </div>
 
-  <!-- TELA DA LINHA DO TEMPO -->
   <div id="tela-diario" style="display: none;">
     <header>
       <img src="logotipo.png" alt="Logo" class="header-logo">
@@ -93,7 +88,7 @@
   </div>
 
   <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwMacPEsQbfW0YgaCNKstwOxhj7TO0JrD3IKPJI38dBjnNOHEbiCwx4mdVfW6ODAaSa/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbx1lYhAICrdcUmXbnuZXqOoZLy9iXwFW1g-vC_GvJ6joLgltrIH-rBhM9wEPCtE7NQq/exec";
 
     async function acessarDiario() {
       const nome = document.getElementById('input-pet').value;
@@ -103,7 +98,7 @@
       }
       
       const btn = document.querySelector('#tela-login .btn');
-      btn.innerText = "Buscando rotina de hoje...";
+      btn.innerText = "Buscando...";
 
       try {
         const resposta = await fetch(URL_API, {
@@ -116,7 +111,6 @@
           document.getElementById('tela-login').style.display = 'none';
           document.getElementById('tela-diario').style.display = 'block';
           
-          // Formata o nome para ter a primeira letra maiúscula
           const nomeFormatado = nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
           document.getElementById('nome-pet-display').innerText = nomeFormatado;
           
@@ -127,19 +121,13 @@
             timeline.innerHTML = '<p style="color: var(--muted); padding: 20px 0; text-align: center;">Ainda não há registros para hoje. A equipe atualizará em breve!</p>';
           } else {
             retorno.dados.forEach(item => {
-              
-              // === NOVA LÓGICA DE CORREÇÃO DO HORÁRIO ===
               let horaLimpa = item.horario;
-              
-              // Se o Google Sheets enviou o formato de data complexo (ex: 1899-12-30T...)
               if (typeof horaLimpa === 'string' && horaLimpa.includes('T')) {
                 const dataConvertida = new Date(horaLimpa);
-                // Verifica se a conversão funcionou e extrai apenas as horas e minutos
                 if (!isNaN(dataConvertida.getTime())) {
                   horaLimpa = dataConvertida.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 }
               }
-              // ==========================================
 
               timeline.innerHTML += `
                 <div class="timeline-item">
@@ -150,6 +138,9 @@
               `;
             });
           }
+        } else {
+          // SE O NOME ESTIVER ERRADO OU NÃO CADASTRADO, ENTRA AQUI
+          alert(retorno.mensagem);
         }
       } catch (erro) {
         alert("Ocorreu um erro ao buscar os dados. Verifique a internet e tente novamente.");
