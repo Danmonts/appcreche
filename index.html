@@ -35,6 +35,9 @@
     .timeline { position: relative; padding-left: 24px; }
     .timeline::before { content: ''; position: absolute; left: 5px; top: 8px; bottom: 0; width: 2px; background: #e2e8f0; }
     
+    .data-header { background: #e2e8f0; padding: 6px 12px; border-radius: 6px; font-weight: 700; color: #334155; margin: 24px 0 16px -24px; display: inline-block; font-size: 0.9rem; position: relative; z-index: 2; border: 1px solid #cbd5e1; }
+    .data-header:first-child { margin-top: 0; }
+
     .timeline-item { position: relative; margin-bottom: 24px; }
     .timeline-item:last-child { margin-bottom: 0; }
     .timeline-item::before { 
@@ -53,13 +56,13 @@
     <div class="container">
       <div class="card" style="text-align: center; margin-top: 20px;">
         <img src="logotipo.png" alt="Health Vet Center" class="hero-logo">
-        <h3 style="margin-bottom: 10px; font-size: 1.25rem;">Acompanhamento Diário</h3>
-        <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.4;">Bem-vindo ao diário digital do seu pet. Digite o nome dele para ver as atividades de hoje.</p>
+        <h3 style="margin-bottom: 10px; font-size: 1.25rem;">Acompanhamento Semanal</h3>
+        <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.4;">Bem-vindo! Digite o nome do seu pet para ver as atividades dos últimos dias.</p>
         
         <label style="text-align: left;">Nome do Pet</label>
         <input type="text" id="input-pet" placeholder="Ex: Theo">
         
-        <button class="btn" onclick="acessarDiario()">Ver Diário de Hoje</button>
+        <button class="btn" onclick="acessarDiario()">Ver Diário</button>
       </div>
     </div>
   </div>
@@ -76,7 +79,7 @@
           <div class="pet-avatar">🐕</div>
           <div class="pet-info">
             <h2 id="nome-pet-display">Nome do Pet</h2>
-            <p>Atividades registradas hoje</p>
+            <p>Atividades dos últimos 7 dias</p>
           </div>
         </div>
 
@@ -88,7 +91,8 @@
   </div>
 
   <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbzVPh9qo9fak3Ngw1uqRfHRca16nXQhMEUuxxXHEgU35poXlO3lcDIzY1hCven5pgmj/exec";
+    // === COLE O SEU NOVO LINK AQUI DENTRO DAS ASPAS ===
+    const URL_API = "https://script.google.com/macros/s/AKfycbxpH489Ah1lJBfwqznBDYrGNd1TrtZcbjdfluRyUSn-Ii61v82av6r4AnZq6-2IY1b0/exec";
 
     async function acessarDiario() {
       const nome = document.getElementById('input-pet').value;
@@ -98,13 +102,13 @@
       }
       
       const btn = document.querySelector('#tela-login .btn');
-      btn.innerText = "Buscando...";
+      btn.innerText = "Buscando rotina...";
 
       try {
         const resposta = await fetch(URL_API, {
           method: 'POST', 
           body: JSON.stringify({ acao: "buscarDiario", nomePet: nome }),
-          redirect: 'follow'
+          redirect: 'follow' 
         });
         
         const retorno = await resposta.json();
@@ -120,35 +124,44 @@
           timeline.innerHTML = '';
           
           if (retorno.dados.length === 0) {
-            timeline.innerHTML = '<p style="color: var(--muted); padding: 20px 0; text-align: center;">Ainda não há registros para hoje. A equipe atualizará em breve!</p>';
+            timeline.innerHTML = '<p style="color: var(--muted); padding: 20px 0; text-align: center;">Nenhum registro encontrado nos últimos 7 dias.</p>';
           } else {
-            retorno.dados.forEach(item => {
-              let horaLimpa = item.horario;
-              if (typeof horaLimpa === 'string' && horaLimpa.includes('T')) {
-                const dataConvertida = new Date(horaLimpa);
-                if (!isNaN(dataConvertida.getTime())) {
-                  horaLimpa = dataConvertida.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            // Agora o 'retorno.dados' vem separado por dias
+            retorno.dados.forEach(dia => {
+              
+              // Cria a etiqueta com a Data (ex: 15/05/2026)
+              let dataHoje = new Date().toLocaleDateString("pt-BR");
+              let textoData = dia.data === dataHoje ? "HOJE" : dia.data;
+              timeline.innerHTML += `<div class="data-header">📅 ${textoData}</div>`;
+              
+              // Adiciona os eventos daquele dia em baixo da etiqueta
+              dia.eventos.forEach(item => {
+                let horaLimpa = item.horario;
+                if (typeof horaLimpa === 'string' && horaLimpa.includes('T')) {
+                  const dataConvertida = new Date(horaLimpa);
+                  if (!isNaN(dataConvertida.getTime())) {
+                    horaLimpa = dataConvertida.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                  }
                 }
-              }
 
-              timeline.innerHTML += `
-                <div class="timeline-item">
-                  <span class="time">${horaLimpa}</span>
-                  <div class="title">${item.evento}</div>
-                  <div class="desc">${item.descritivo}</div>
-                </div>
-              `;
+                timeline.innerHTML += `
+                  <div class="timeline-item">
+                    <span class="time">${horaLimpa}</span>
+                    <div class="title">${item.evento}</div>
+                    <div class="desc">${item.descritivo}</div>
+                  </div>
+                `;
+              });
             });
           }
         } else {
-          // SE O NOME ESTIVER ERRADO OU NÃO CADASTRADO, ENTRA AQUI E BLOQUEIA A ENTRADA
           alert(retorno.mensagem);
         }
       } catch (erro) {
         alert("Ocorreu um erro ao buscar os dados. Verifique a internet e tente novamente.");
       }
       
-      btn.innerText = "Ver Diário de Hoje";
+      btn.innerText = "Ver Diário";
     }
 
     function voltarBusca() {
