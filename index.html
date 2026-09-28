@@ -55,13 +55,13 @@
     <div class="container">
       <div class="card" style="text-align: center; margin-top: 20px;">
         <!-- Logotipo em Destaque -->
-        <img src="logotipo.jpg" alt="Health Vet Center" class="hero-logo">
+        <img src="logotipo.png" alt="Health Vet Center" class="hero-logo">
         
         <h3 style="margin-bottom: 10px; font-size: 1.25rem;">Acompanhamento Diário</h3>
         <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.4;">Bem-vindo ao diário digital do seu pet. Digite o nome dele para ver as atividades de hoje.</p>
         
         <label style="text-align: left;">Nome do Pet</label>
-        <input type="text" id="input-pet" placeholder="Ex: Max">
+        <input type="text" id="input-pet" placeholder="Ex: Theo">
         
         <button class="btn" onclick="acessarDiario()">Ver Diário de Hoje</button>
       </div>
@@ -71,7 +71,7 @@
   <!-- TELA DA LINHA DO TEMPO -->
   <div id="tela-diario" style="display: none;">
     <header>
-      <img src="logotipo.jpg" alt="Logo" class="header-logo">
+      <img src="logotipo.png" alt="Logo" class="header-logo">
       <span class="header-title">Diário do Pet</span>
     </header>
     
@@ -93,7 +93,7 @@
   </div>
 
   <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbwqsGyPkADEKJjcbdPk7Y5C9aFRQ7uF_ymJv5R5Y0cLGMr248qWgyOVgR3jSGJ9MXI/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbwMacPEsQbfW0YgaCNKstwOxhj7TO0JrD3IKPJI38dBjnNOHEbiCwx4mdVfW6ODAaSa/exec";
 
     async function acessarDiario() {
       const nome = document.getElementById('input-pet').value;
