@@ -88,7 +88,6 @@
   </div>
 
   <script>
-    // COLOQUE O SEU NOVO LINK AQUI DENTRO DAS ASPAS
     const URL_API = "https://script.google.com/macros/s/AKfycbzVPh9qo9fak3Ngw1uqRfHRca16nXQhMEUuxxXHEgU35poXlO3lcDIzY1hCven5pgmj/exec";
 
     async function acessarDiario() {
@@ -105,7 +104,7 @@
         const resposta = await fetch(URL_API, {
           method: 'POST', 
           body: JSON.stringify({ acao: "buscarDiario", nomePet: nome }),
-          redirect: 'follow' // Ajuda a evitar bloqueios do Google em telemóveis
+          redirect: 'follow'
         });
         
         const retorno = await resposta.json();
@@ -142,7 +141,7 @@
             });
           }
         } else {
-          // SE O NOME ESTIVER ERRADO OU NÃO CADASTRADO, ELE MOSTRA O ALERTA E FICA NA TELA INICIAL
+          // SE O NOME ESTIVER ERRADO OU NÃO CADASTRADO, ENTRA AQUI E BLOQUEIA A ENTRADA
           alert(retorno.mensagem);
         }
       } catch (erro) {
