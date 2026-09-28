@@ -160,7 +160,6 @@
           const presentes = retorno.dados.filter(p => p.status === 'presente');
           const ausentes = retorno.dados.filter(p => p.status === 'ausente');
           
-          // Atualiza o contador de pets na creche
           contador.innerText = presentes.length;
 
           if (presentes.length > 0) {
@@ -222,7 +221,6 @@
           alert('Evento salvo na planilha!');
           document.getElementById('ind-obs').value = '';
           
-          // Se for entrada ou saída, recarrega a lista para atualizar quem está na creche
           if(eventoEscolhido.includes('Check-in') || eventoEscolhido.includes('Check-out')) {
             carregarPets(); 
           }
