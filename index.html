@@ -127,9 +127,23 @@
             timeline.innerHTML = '<p style="color: var(--muted); padding: 20px 0; text-align: center;">Ainda não há registros para hoje. A equipe atualizará em breve!</p>';
           } else {
             retorno.dados.forEach(item => {
+              
+              // === NOVA LÓGICA DE CORREÇÃO DO HORÁRIO ===
+              let horaLimpa = item.horario;
+              
+              // Se o Google Sheets enviou o formato de data complexo (ex: 1899-12-30T...)
+              if (typeof horaLimpa === 'string' && horaLimpa.includes('T')) {
+                const dataConvertida = new Date(horaLimpa);
+                // Verifica se a conversão funcionou e extrai apenas as horas e minutos
+                if (!isNaN(dataConvertida.getTime())) {
+                  horaLimpa = dataConvertida.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                }
+              }
+              // ==========================================
+
               timeline.innerHTML += `
                 <div class="timeline-item">
-                  <span class="time">${item.horario}</span>
+                  <span class="time">${horaLimpa}</span>
                   <div class="title">${item.evento}</div>
                   <div class="desc">${item.descritivo}</div>
                 </div>
