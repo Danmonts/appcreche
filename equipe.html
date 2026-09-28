@@ -39,7 +39,7 @@
 </head>
 <body onload="definirHoraAtual()">
   <header>
-    <img src="logotipo.jpg" alt="Health Vet Center" class="logo-header">
+    <img src="logotipo.png" alt="Health Vet Center" class="logo-header">
     <div id="header-title" class="header-title">Registro Individual</div>
   </header>
 
@@ -131,7 +131,7 @@
   </nav>
 
   <script>
-    const URL_API = "https://script.google.com/macros/s/AKfycbxCuCusgBa-OEqOQ2lHtb_754U3Jo-4cE1kB1a0Nlw9GevEFswJQFdYTs-sETJz3oyH/exec";
+    const URL_API = "https://script.google.com/macros/s/AKfycbzS-M6VDCbhBrid0rUgUWUK1ia3NjQ3naz68N-3uwEjduI51CIEV1VO1hRILwPdwChT/exec";
 
     function definirHoraAtual() {
       const agora = new Date();
@@ -158,13 +158,26 @@
       const btn = document.querySelector('#aba-individual .btn');
       btn.innerText = "Enviando...";
       const dados = {
-        acao: "registrarEvento", nomePet: document.getElementById('ind-pet').value,
-        evento: document.getElementById('ind-evento').value, horario: document.getElementById('ind-hora').value,
+        acao: "registrarEvento", 
+        nomePet: document.getElementById('ind-pet').value,
+        evento: document.getElementById('ind-evento').value, 
+        horario: document.getElementById('ind-hora').value,
         observacoes: document.getElementById('ind-obs').value
       };
-      await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados) });
-      alert('Evento individual salvo na planilha!');
-      document.getElementById('ind-obs').value = '';
+      
+      try {
+        const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados), redirect: 'follow' });
+        const retorno = await resposta.json();
+        
+        if(retorno.status === "sucesso") {
+          alert('Evento individual salvo na planilha!');
+          document.getElementById('ind-obs').value = '';
+        } else {
+          alert('Erro na base de dados: ' + retorno.mensagem);
+        }
+      } catch (erro) {
+        alert('Falha na ligação com o Google. Verifique se o link da API está correto e configurado para "Qualquer pessoa".');
+      }
       btn.innerText = "Lançar na Linha do Tempo";
     }
 
@@ -172,13 +185,26 @@
       const btn = document.querySelector('.btn-matilha');
       btn.innerText = "Enviando para todos...";
       const dados = {
-        acao: "registrarEvento", nomePet: "Matilha",
-        evento: document.getElementById('mat-evento').value, horario: document.getElementById('mat-hora').value,
+        acao: "registrarEvento", 
+        nomePet: "Matilha",
+        evento: document.getElementById('mat-evento').value, 
+        horario: document.getElementById('mat-hora').value,
         observacoes: document.getElementById('mat-obs').value
       };
-      await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados) });
-      alert('Evento da matilha registrado!');
-      document.getElementById('mat-obs').value = '';
+      
+      try {
+        const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados), redirect: 'follow' });
+        const retorno = await resposta.json();
+        
+        if(retorno.status === "sucesso") {
+          alert('Evento da matilha registrado!');
+          document.getElementById('mat-obs').value = '';
+        } else {
+          alert('Erro na base de dados: ' + retorno.mensagem);
+        }
+      } catch (erro) {
+        alert('Falha na ligação com o Google. Verifique se o link da API está correto e configurado para "Qualquer pessoa".');
+      }
       btn.innerText = "Salvar para Todos";
     }
 
@@ -186,13 +212,28 @@
       const btn = document.querySelector('#aba-cadastro .btn');
       btn.innerText = "Cadastrando...";
       const dados = {
-        acao: "cadastrarPet", nomePet: document.getElementById('cad-nome').value, raca: document.getElementById('cad-raca').value,
-        nomeTutor: document.getElementById('cad-tutor').value, telefone: document.getElementById('cad-telefone').value,
-        restricoes: document.getElementById('cad-restricoes').value, veterinario: document.getElementById('cad-vet').value
+        acao: "cadastrarPet", 
+        nomePet: document.getElementById('cad-nome').value, 
+        raca: document.getElementById('cad-raca').value,
+        nomeTutor: document.getElementById('cad-tutor').value, 
+        telefone: document.getElementById('cad-telefone').value,
+        restricoes: document.getElementById('cad-restricoes').value, 
+        veterinario: document.getElementById('cad-vet').value
       };
-      await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados) });
-      alert('Novo pet cadastrado com sucesso!');
-      document.querySelectorAll('#aba-cadastro input, #aba-cadastro textarea').forEach(campo => campo.value = '');
+      
+      try {
+        const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados), redirect: 'follow' });
+        const retorno = await resposta.json();
+        
+        if (retorno.status === "sucesso") {
+          alert('Novo pet cadastrado com sucesso!');
+          document.querySelectorAll('#aba-cadastro input, #aba-cadastro textarea').forEach(campo => campo.value = '');
+        } else {
+          alert('Erro na base de dados: ' + retorno.mensagem);
+        }
+      } catch (erro) {
+        alert('Falha na ligação com o Google. Verifique as configurações (Nova Implantação > Qualquer pessoa).');
+      }
       btn.innerText = "Cadastrar Novo Cliente";
     }
   </script>
