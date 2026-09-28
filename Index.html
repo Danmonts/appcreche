@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Diário do Pet - Health Vet Center</title>
+  
+  <!-- Ícones do aplicativo -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="favicon.ico">
+  
+  <style>
+    :root { --primary: #1e5631; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 30px; }
+    
+    header { background: var(--primary); color: #fff; padding: 12px 16px; position: sticky; top: 0; display: flex; align-items: center; justify-content: center; gap: 10px; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .header-logo { max-height: 35px; background: #fff; padding: 4px; border-radius: 6px; }
+    .header-title { font-weight: 700; font-size: 1.1rem; }
+
+    .container { padding: 16px; max-width: 480px; margin: 0 auto; width: 100%; }
+    .card { background: var(--card); border-radius: 12px; padding: 24px 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    
+    .hero-logo { width: 100%; max-width: 220px; display: block; margin: 0 auto 20px auto; }
+    
+    label { display: block; font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; margin-bottom: 20px; appearance: none; }
+    
+    .btn { display: block; width: 100%; background: var(--primary); color: #fff; padding: 14px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; text-align: center; font-size: 1.05rem; transition: background 0.2s; }
+    
+    .pet-profile { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+    .pet-avatar { width: 60px; height: 60px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .pet-info h2 { font-size: 1.3rem; margin-bottom: 4px; }
+    .pet-info p { font-size: 0.9rem; color: var(--muted); }
+    
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before { content: ''; position: absolute; left: 5px; top: 8px; bottom: 0; width: 2px; background: #e2e8f0; }
+    
+    .timeline-item { position: relative; margin-bottom: 24px; }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-item::before { 
+      content: ''; position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; 
+      border-radius: 50%; background: var(--primary); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--primary); 
+    }
+    
+    .time { font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; display: inline-block; background: #e0f2fe; padding: 4px 10px; border-radius: 12px; color: #0369a1; }
+    .title { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .desc { font-size: 0.95rem; color: var(--muted); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  
+  <!-- TELA DE BUSCA (LOGIN DO TUTOR) -->
+  <div id="tela-login">
+    <div class="container">
+      <div class="card" style="text-align: center; margin-top: 20px;">
+        <!-- Logotipo em Destaque -->
+        <img src="logotipo.png" alt="Health Vet Center" class="hero-logo">
+        
+        <h3 style="margin-bottom: 10px; font-size: 1.25rem;">Acompanhamento Diário</h3>
+        <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.4;">Bem-vindo ao diário digital do seu pet. Digite o nome dele para ver as atividades de hoje.</p>
+        
+        <label style="text-align: left;">Nome do Pet</label>
+        <input type="text" id="input-pet" placeholder="Ex: Max">
+        
+        <button class="btn" onclick="acessarDiario()">Ver Diário de Hoje</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA DA LINHA DO TEMPO -->
+  <div id="tela-diario" style="display: none;">
+    <header>
+      <img src="logotipo.png" alt="Logo" class="header-logo">
+      <span class="header-title">Diário do Pet</span>
+    </header>
+    
+    <div class="container">
+      <div class="card">
+        <div class="pet-profile">
+          <div class="pet-avatar">🐕</div>
+          <div class="pet-info">
+            <h2 id="nome-pet-display">Nome do Pet</h2>
+            <p>Atividades registradas hoje</p>
+          </div>
+        </div>
+
+        <div class="timeline"></div>
+      </div>
+      
+      <button class="btn" style="background: #e2e8f0; color: var(--text);" onclick="voltarBusca()">Buscar outro pet</button>
+    </div>
+  </div>
+
+  <script>
+    const URL_API = "https://script.google.com/macros/s/AKfycbzS-M6VDCbhBrid0rUgUWUK1ia3NjQ3naz68N-3uwEjduI51CIEV1VO1hRILwPdwChT/exec";
+
+    async function acessarDiario() {
+      const nome = document.getElementById('input-pet').value;
+      if(nome.trim() === "") {
+        alert("Por favor, digite o nome do pet.");
+        return;
+      }
+      
+      const btn = document.querySelector('#tela-login .btn');
+      btn.innerText = "Buscando rotina de hoje...";
+
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST', body: JSON.stringify({ acao: "buscarDiario", nomePet: nome })
+        });
+        
+        const retorno = await resposta.json();
+        
+        if (retorno.status === "sucesso") {
+          document.getElementById('tela-login').style.display = 'none';
+          document.getElementById('tela-diario').style.display = 'block';
+          
+          // Formata o nome para ter a primeira letra maiúscula
+          const nomeFormatado = nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
+          document.getElementById('nome-pet-display').innerText = nomeFormatado;
+          
+          const timeline = document.querySelector('.timeline');
+          timeline.innerHTML = '';
+          
+          if (retorno.dados.length === 0) {
+            timeline.innerHTML = '<p style="color: var(--muted); padding: 20px 0; text-align: center;">Ainda não há registros para hoje. A equipe atualizará em breve!</p>';
+          } else {
+            retorno.dados.forEach(item => {
+              timeline.innerHTML += `
+                <div class="timeline-item">
+                  <span class="time">${item.horario}</span>
+                  <div class="title">${item.evento}</div>
+                  <div class="desc">${item.descritivo}</div>
+                </div>
+              `;
+            });
+          }
+        }
+      } catch (erro) {
+        alert("Ocorreu um erro ao buscar os dados. Verifique a internet e tente novamente.");
+      }
+      
+      btn.innerText = "Ver Diário de Hoje";
+    }
+
+    function voltarBusca() {
+      document.getElementById('tela-diario').style.display = 'none';
+      document.getElementById('tela-login').style.display = 'block';
+      document.getElementById('input-pet').value = '';
+    }
+  </script>
+</body>
+</html>
