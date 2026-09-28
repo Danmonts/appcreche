@@ -45,21 +45,26 @@
   <!-- ABA 1: REGISTRO INDIVIDUAL -->
   <div class="container" id="aba-individual">
     <div class="card">
-      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Lance eventos específicos para um pet.</p>
       
+      <!-- Contador de Presenças -->
+      <div style="background: #e0f2fe; color: #0369a1; padding: 10px 14px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+         <span>Pets na Creche Agora:</span>
+         <span id="contador-presentes" style="background: #0284c7; color: white; padding: 2px 10px; border-radius: 12px; font-size: 1rem;">0</span>
+      </div>
+
       <label>Selecione o Pet</label>
       <select id="ind-pet">
-        <option value="" disabled selected>Carregando pets...</option>
+        <option value="" disabled selected>Buscando na base de dados...</option>
       </select>
 
       <div class="row">
         <div class="col">
           <label>Tipo de Evento</label>
           <select id="ind-evento">
+            <option>Check-in (Entrada)</option>
             <option>Alimentação (Principal)</option>
             <option>Petisco / Fruta</option>
             <option>Ocorrência de Saúde</option>
-            <option>Check-in (Entrada)</option>
             <option>Check-out (Saída)</option>
           </select>
         </div>
@@ -70,7 +75,7 @@
       </div>
 
       <label>Detalhes / Observações</label>
-      <textarea id="ind-obs" rows="2" placeholder="Ex: Comeu tudo / Apresentou fezes moles..."></textarea>
+      <textarea id="ind-obs" rows="2" placeholder="Ex: Entrou animado / Comeu tudo..."></textarea>
 
       <button class="btn" onclick="salvarIndividual()">Lançar na Linha do Tempo</button>
     </div>
@@ -127,8 +132,8 @@
   </nav>
 
   <script>
-    // COLE O SEU NOVO LINK ABAIXO:
-    const URL_API = "https://script.google.com/macros/s/AKfycbwqsGyPkADEKJjcbdPk7Y5C9aFRQ7uF_ymJv5R5Y0cLGMr248qWgyOVgR3jSGJ9MXI/exec";
+    // === https://script.google.com/macros/s/AKfycbwMacPEsQbfW0YgaCNKstwOxhj7TO0JrD3IKPJI38dBjnNOHEbiCwx4mdVfW6ODAaSa/exec: ===
+    const URL_API = "https://script.google.com/macros/s/AKfycbwMacPEsQbfW0YgaCNKstwOxhj7TO0JrD3IKPJI38dBjnNOHEbiCwx4mdVfW6ODAaSa/exec";
 
     function iniciarApp() {
       definirHoraAtual();
@@ -144,21 +149,34 @@
 
     async function carregarPets() {
       const select = document.getElementById('ind-pet');
-      select.innerHTML = '<option value="" disabled selected>Buscando na planilha...</option>';
+      const contador = document.getElementById('contador-presentes');
       
       try {
-        const resposta = await fetch(URL_API, {
-          method: 'POST',
-          body: JSON.stringify({ acao: "listarPets" }),
-          redirect: 'follow'
-        });
+        const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify({ acao: "listarPets" }), redirect: 'follow' });
         const retorno = await resposta.json();
         
         if (retorno.status === "sucesso") {
-          select.innerHTML = '<option value="" disabled selected>Escolha um pet presente...</option>';
-          retorno.dados.forEach(pet => {
-            select.innerHTML += `<option value="${pet}">${pet}</option>`;
-          });
+          let html = '<option value="" disabled selected>Selecione um pet...</option>';
+          
+          const presentes = retorno.dados.filter(p => p.status === 'presente');
+          const ausentes = retorno.dados.filter(p => p.status === 'ausente');
+          
+          // Atualiza o contador de pets na creche
+          contador.innerText = presentes.length;
+
+          if (presentes.length > 0) {
+            html += '<optgroup label="🟢 NA CRECHE (PRESENTES)">';
+            presentes.forEach(p => { html += `<option value="${p.nome}">${p.nome}</option>`; });
+            html += '</optgroup>';
+          }
+
+          if (ausentes.length > 0) {
+            html += '<optgroup label="⚪ AUSENTES / AGUARDANDO">';
+            ausentes.forEach(p => { html += `<option value="${p.nome}">${p.nome}</option>`; });
+            html += '</optgroup>';
+          }
+
+          select.innerHTML = html;
         } else {
           select.innerHTML = '<option value="" disabled selected>Erro ao carregar lista</option>';
         }
@@ -180,7 +198,6 @@
       document.getElementById('header-title').innerText = tituloHeader;
       definirHoraAtual();
       
-      // Se voltar para a tela individual, recarrega a lista para caso alguém tenha sido cadastrado
       if (abaId === 'individual') carregarPets(); 
     }
 
@@ -188,11 +205,13 @@
       const btn = document.querySelector('#aba-individual .btn');
       btn.innerText = "Enviando...";
       
+      const eventoEscolhido = document.getElementById('ind-evento').value;
+
       try {
         const dados = {
           acao: "registrarEvento", 
           nomePet: document.getElementById('ind-pet').value,
-          evento: document.getElementById('ind-evento').value, 
+          evento: eventoEscolhido, 
           horario: document.getElementById('ind-hora').value,
           observacoes: document.getElementById('ind-obs').value
         };
@@ -203,6 +222,11 @@
         if(retorno.status === "sucesso") {
           alert('Evento salvo na planilha!');
           document.getElementById('ind-obs').value = '';
+          
+          // Se for entrada ou saída, recarrega a lista para atualizar quem está na creche
+          if(eventoEscolhido.includes('Check-in') || eventoEscolhido.includes('Check-out')) {
+            carregarPets(); 
+          }
         } else {
           alert('Erro: ' + retorno.mensagem);
         }
