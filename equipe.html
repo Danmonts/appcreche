@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>App Creche - Equipe</title>
+  
+  <!-- Ícones do aplicativo -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="favicon.ico">
+  
+  <style>
+    :root { --primary: #1e5631; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --muted: #64748b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 75px; }
+    
+    header { background: #fff; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; text-align: center; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .logo-header { max-height: 45px; margin-bottom: 6px; object-fit: contain; }
+    .header-title { font-weight: 700; font-size: 1rem; color: var(--primary); }
+    
+    .container { padding: 16px; max-width: 480px; margin: 0 auto; width: 100%; }
+    .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card h3 { font-size: 1.1rem; margin-bottom: 8px; color: var(--text); }
+    
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-top: 12px; margin-bottom: 4px; color: var(--muted); }
+    input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; background: #fff; appearance: none; }
+    
+    .btn { display: block; width: 100%; background: var(--primary); color: #fff; padding: 14px; border-radius: 8px; border: none; font-weight: 600; margin-top: 20px; cursor: pointer; text-align: center; font-size: 1rem; }
+    .btn-matilha { background: #3b82f6; } 
+    .btn-dark { background: #0f172a; }
+    
+    .row { display: flex; gap: 10px; width: 100%; }
+    .col { flex: 1; }
+
+    nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 10px 0; z-index: 10; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+    nav button { background: none; border: none; font-size: 0.8rem; color: var(--muted); font-weight: 600; cursor: pointer; width: 33%; padding: 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    nav button.active { color: var(--primary); }
+  </style>
+</head>
+<body onload="definirHoraAtual()">
+  <header>
+    <img src="logotipo.png" alt="Health Vet Center" class="logo-header">
+    <div id="header-title" class="header-title">Registro Individual</div>
+  </header>
+
+  <!-- ABA 1: REGISTRO INDIVIDUAL -->
+  <div class="container" id="aba-individual">
+    <div class="card">
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Lance eventos específicos para um pet.</p>
+      
+      <label>Selecione o Pet</label>
+      <select id="ind-pet">
+        <option value="" disabled selected>Escolha um pet presente...</option>
+        <option>Max</option>
+        <option>Thor</option>
+      </select>
+
+      <div class="row">
+        <div class="col">
+          <label>Tipo de Evento</label>
+          <select id="ind-evento">
+            <option>Alimentação (Principal)</option>
+            <option>Petisco / Fruta</option>
+            <option>Ocorrência de Saúde</option>
+            <option>Check-in (Entrada)</option>
+            <option>Check-out (Saída)</option>
+          </select>
+        </div>
+        <div class="col" style="max-width: 110px;">
+          <label>Horário</label>
+          <input type="time" id="ind-hora">
+        </div>
+      </div>
+
+      <label>Detalhes / Observações</label>
+      <textarea id="ind-obs" rows="2" placeholder="Ex: Comeu tudo / Apresentou fezes moles..."></textarea>
+
+      <button class="btn" onclick="salvarIndividual()">Lançar na Linha do Tempo</button>
+    </div>
+  </div>
+
+  <!-- ABA 2: AÇÕES DA MATILHA -->
+  <div class="container" id="aba-matilha" style="display: none;">
+    <div class="card">
+      <h3 style="color: #3b82f6;">Ação em Grupo</h3>
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Adicionado na linha do tempo de <strong>todos os pets presentes</strong>.</p>
+
+      <div class="row">
+        <div class="col">
+          <label>O que a matilha fez?</label>
+          <select id="mat-evento">
+            <option>Atividade / Brincadeira</option>
+            <option>Hora da Soneca 💤</option>
+            <option>Petisco Coletivo</option>
+            <option>Fim da Soneca (Acordaram)</option>
+          </select>
+        </div>
+        <div class="col" style="max-width: 110px;">
+          <label>Horário</label>
+          <input type="time" id="mat-hora">
+        </div>
+      </div>
+
+      <label>Descritivo da Atividade</label>
+      <textarea id="mat-obs" rows="3" placeholder="Ex: Todos brincaram de caça ao tesouro na grama."></textarea>
+
+      <button class="btn btn-matilha" onclick="salvarMatilha()">Salvar para Todos</button>
+    </div>
+  </div>
+
+  <!-- ABA 3: CADASTRO DE PETS -->
+  <div class="container" id="aba-cadastro" style="display: none;">
+    <div class="card">
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">Preencha os dados para adicionar à base.</p>
+
+      <label>Nome do Pet</label><input type="text" id="cad-nome" placeholder="Ex: Thor">
+      <label>Raça</label><input type="text" id="cad-raca" placeholder="Ex: Buldogue Francês">
+      <label>Nome do Tutor</label><input type="text" id="cad-tutor" placeholder="Ex: João Silva">
+      <label>Telefone (WhatsApp)</label><input type="tel" id="cad-telefone" placeholder="Ex: (11) 99999-9999">
+      <label>Restrições / Observações Fixas</label><textarea id="cad-restricoes" rows="2"></textarea>
+      <label>Veterinário de Emergência</label><input type="text" id="cad-vet">
+
+      <button class="btn btn-dark" onclick="salvarCadastro()">Cadastrar Novo Cliente</button>
+    </div>
+  </div>
+
+  <nav>
+    <button class="active" onclick="trocarAba('individual', this, 'Registro Individual')">🐕<br>Individual</button>
+    <button onclick="trocarAba('matilha', this, 'Ações da Matilha')">🎾<br>Matilha</button>
+    <button onclick="trocarAba('cadastro', this, 'Novo Cadastro')">📝<br>Cadastro</button>
+  </nav>
+
+  <script>
+    const URL_API = "https://script.google.com/macros/s/AKfycbzS-M6VDCbhBrid0rUgUWUK1ia3NjQ3naz68N-3uwEjduI51CIEV1VO1hRILwPdwChT/exec";
+
+    function definirHoraAtual() {
+      const agora = new Date();
+      const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('ind-hora').value = horaFormatada;
+      document.getElementById('mat-hora').value = horaFormatada;
+    }
+
+    function trocarAba(abaId, elementoBotao, tituloHeader) {
+      document.getElementById('aba-individual').style.display = 'none';
+      document.getElementById('aba-matilha').style.display = 'none';
+      document.getElementById('aba-cadastro').style.display = 'none';
+      
+      document.getElementById('aba-' + abaId).style.display = 'block';
+      
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      elementoBotao.classList.add('active');
+      
+      document.getElementById('header-title').innerText = tituloHeader;
+      definirHoraAtual();
+    }
+
+    async function salvarIndividual() {
+      const btn = document.querySelector('#aba-individual .btn');
+      btn.innerText = "Enviando...";
+      const dados = {
+        acao: "registrarEvento", nomePet: document.getElementById('ind-pet').value,
+        evento: document.getElementById('ind-evento').value, horario: document.getElementById('ind-hora').value,
+        observacoes: document.getElementById('ind-obs').value
+      };
+      await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados) });
+      alert('Evento individual salvo na planilha!');
+      document.getElementById('ind-obs').value = '';
+      btn.innerText = "Lançar na Linha do Tempo";
+    }
+
+    async function salvarMatilha() {
+      const btn = document.querySelector('.btn-matilha');
+      btn.innerText = "Enviando para todos...";
+      const dados = {
+        acao: "registrarEvento", nomePet: "Matilha",
+        evento: document.getElementById('mat-evento').value, horario: document.getElementById('mat-hora').value,
+        observacoes: document.getElementById('mat-obs').value
+      };
+      await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados) });
+      alert('Evento da matilha registrado!');
+      document.getElementById('mat-obs').value = '';
+      btn.innerText = "Salvar para Todos";
+    }
+
+    async function salvarCadastro() {
+      const btn = document.querySelector('#aba-cadastro .btn');
+      btn.innerText = "Cadastrando...";
+      const dados = {
+        acao: "cadastrarPet", nomePet: document.getElementById('cad-nome').value, raca: document.getElementById('cad-raca').value,
+        nomeTutor: document.getElementById('cad-tutor').value, telefone: document.getElementById('cad-telefone').value,
+        restricoes: document.getElementById('cad-restricoes').value, veterinario: document.getElementById('cad-vet').value
+      };
+      await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados) });
+      alert('Novo pet cadastrado com sucesso!');
+      document.querySelectorAll('#aba-cadastro input, #aba-cadastro textarea').forEach(campo => campo.value = '');
+      btn.innerText = "Cadastrar Novo Cliente";
+    }
+  </script>
+</body>
+</html>
