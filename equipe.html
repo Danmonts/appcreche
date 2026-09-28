@@ -36,7 +36,7 @@
     nav button.active { color: var(--primary); }
   </style>
 </head>
-<body onload="definirHoraAtual()">
+<body onload="iniciarApp()">
   <header>
     <img src="logotipo.png" alt="Health Vet Center" class="logo-header">
     <div id="header-title" class="header-title">Registro Individual</div>
@@ -49,9 +49,7 @@
       
       <label>Selecione o Pet</label>
       <select id="ind-pet">
-        <option value="" disabled selected>Escolha um pet presente...</option>
-        <option>Max</option>
-        <option>Thor</option>
+        <option value="" disabled selected>Carregando pets...</option>
       </select>
 
       <div class="row">
@@ -114,11 +112,9 @@
 
       <label>Nome do Pet</label><input type="text" id="cad-nome" placeholder="Ex: Theo">
       <label>Raça</label><input type="text" id="cad-raca" placeholder="Ex: Spitz Alemão">
-      <label>Nome do Tutor</label><input type="text" id="cad-tutor" placeholder="Ex: Paloma Bortoloti">
-      <label>Telefone (WhatsApp)</label><input type="tel" id="cad-telefone" placeholder="Ex: (11) 94390-5282">
+      <label>Nome do Tutor</label><input type="text" id="cad-tutor" placeholder="Ex: Paloma">
+      <label>Telefone (WhatsApp)</label><input type="tel" id="cad-telefone" placeholder="Ex: (11) 90000-0000">
       <label>Restrições / Observações Fixas</label><textarea id="cad-restricoes" rows="2"></textarea>
-      
-      <!-- O campo veterinário foi removido do HTML, e o JavaScript abaixo já está preparado para isso -->
 
       <button class="btn btn-dark" onclick="salvarCadastro()">Cadastrar Novo Cliente</button>
     </div>
@@ -131,13 +127,44 @@
   </nav>
 
   <script>
+    // COLE O SEU NOVO LINK ABAIXO:
     const URL_API = "https://script.google.com/macros/s/AKfycbwqsGyPkADEKJjcbdPk7Y5C9aFRQ7uF_ymJv5R5Y0cLGMr248qWgyOVgR3jSGJ9MXI/exec";
+
+    function iniciarApp() {
+      definirHoraAtual();
+      carregarPets();
+    }
 
     function definirHoraAtual() {
       const agora = new Date();
       const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       document.getElementById('ind-hora').value = horaFormatada;
       document.getElementById('mat-hora').value = horaFormatada;
+    }
+
+    async function carregarPets() {
+      const select = document.getElementById('ind-pet');
+      select.innerHTML = '<option value="" disabled selected>Buscando na planilha...</option>';
+      
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          body: JSON.stringify({ acao: "listarPets" }),
+          redirect: 'follow'
+        });
+        const retorno = await resposta.json();
+        
+        if (retorno.status === "sucesso") {
+          select.innerHTML = '<option value="" disabled selected>Escolha um pet presente...</option>';
+          retorno.dados.forEach(pet => {
+            select.innerHTML += `<option value="${pet}">${pet}</option>`;
+          });
+        } else {
+          select.innerHTML = '<option value="" disabled selected>Erro ao carregar lista</option>';
+        }
+      } catch (erro) {
+        select.innerHTML = '<option value="" disabled selected>Falha na conexão</option>';
+      }
     }
 
     function trocarAba(abaId, elementoBotao, tituloHeader) {
@@ -152,6 +179,9 @@
       
       document.getElementById('header-title').innerText = tituloHeader;
       definirHoraAtual();
+      
+      // Se voltar para a tela individual, recarrega a lista para caso alguém tenha sido cadastrado
+      if (abaId === 'individual') carregarPets(); 
     }
 
     async function salvarIndividual() {
@@ -161,24 +191,23 @@
       try {
         const dados = {
           acao: "registrarEvento", 
-          nomePet: document.getElementById('ind-pet')?.value || '',
-          evento: document.getElementById('ind-evento')?.value || '', 
-          horario: document.getElementById('ind-hora')?.value || '',
-          observacoes: document.getElementById('ind-obs')?.value || ''
+          nomePet: document.getElementById('ind-pet').value,
+          evento: document.getElementById('ind-evento').value, 
+          horario: document.getElementById('ind-hora').value,
+          observacoes: document.getElementById('ind-obs').value
         };
         
         const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados), redirect: 'follow' });
         const retorno = await resposta.json();
         
         if(retorno.status === "sucesso") {
-          alert('Evento individual salvo na planilha!');
-          const obsField = document.getElementById('ind-obs');
-          if(obsField) obsField.value = '';
+          alert('Evento salvo na planilha!');
+          document.getElementById('ind-obs').value = '';
         } else {
-          alert('Erro na base de dados: ' + retorno.mensagem);
+          alert('Erro: ' + retorno.mensagem);
         }
       } catch (erro) {
-        alert('Falha na ligação com o Google. Verifique a sua internet ou as configurações da API.');
+        alert('Falha na ligação com o Google.');
       }
       btn.innerText = "Lançar na Linha do Tempo";
     }
@@ -189,11 +218,9 @@
       
       try {
         const dados = {
-          acao: "registrarEvento", 
-          nomePet: "Matilha",
-          evento: document.getElementById('mat-evento')?.value || '', 
-          horario: document.getElementById('mat-hora')?.value || '',
-          observacoes: document.getElementById('mat-obs')?.value || ''
+          acao: "registrarEvento", nomePet: "Matilha",
+          evento: document.getElementById('mat-evento').value, horario: document.getElementById('mat-hora').value,
+          observacoes: document.getElementById('mat-obs').value
         };
         
         const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados), redirect: 'follow' });
@@ -201,13 +228,12 @@
         
         if(retorno.status === "sucesso") {
           alert('Evento da matilha registrado!');
-          const obsMatilha = document.getElementById('mat-obs');
-          if(obsMatilha) obsMatilha.value = '';
+          document.getElementById('mat-obs').value = '';
         } else {
-          alert('Erro na base de dados: ' + retorno.mensagem);
+          alert('Erro: ' + retorno.mensagem);
         }
       } catch (erro) {
-        alert('Falha na ligação com o Google. Verifique a sua internet ou as configurações da API.');
+        alert('Falha na ligação com o Google.');
       }
       btn.innerText = "Salvar para Todos";
     }
@@ -217,15 +243,13 @@
       btn.innerText = "Cadastrando...";
       
       try {
-        // O ponto de interrogação (?.) garante que se o campo não existir, ele envia em branco e não trava o app
         const dados = {
           acao: "cadastrarPet", 
           nomePet: document.getElementById('cad-nome')?.value || '', 
           raca: document.getElementById('cad-raca')?.value || '',
           nomeTutor: document.getElementById('cad-tutor')?.value || '', 
           telefone: document.getElementById('cad-telefone')?.value || '',
-          restricoes: document.getElementById('cad-restricoes')?.value || '', 
-          veterinario: document.getElementById('cad-vet')?.value || '' 
+          restricoes: document.getElementById('cad-restricoes')?.value || ''
         };
         
         const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados), redirect: 'follow' });
@@ -233,15 +257,13 @@
         
         if (retorno.status === "sucesso") {
           alert('Novo pet cadastrado com sucesso!');
-          // Limpa todos os campos após o sucesso
           document.querySelectorAll('#aba-cadastro input, #aba-cadastro textarea').forEach(campo => campo.value = '');
         } else {
-          alert('Erro na base de dados: ' + retorno.mensagem);
+          alert('Erro: ' + retorno.mensagem);
         }
       } catch (erro) {
-        alert('Falha na ligação com o Google. Verifique se publicou o script como "Qualquer pessoa".');
+        alert('Falha na ligação com o Google.');
       }
-      
       btn.innerText = "Cadastrar Novo Cliente";
     }
   </script>
