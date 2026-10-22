@@ -235,27 +235,30 @@
 
     async function salvarMatilha() {
       const btn = document.querySelector('.btn-matilha');
-      btn.innerText = "Enviando para todos...";
+      btn.innerText = "Enviando...";
       
       try {
         const dados = {
-          acao: "registrarEvento", nomePet: "Matilha",
-          evento: document.getElementById('mat-evento').value, horario: document.getElementById('mat-hora').value,
+          acao: "registrarEvento", 
+          nomePet: "Matilha",
+          evento: document.getElementById('mat-evento').value, 
+          horario: document.getElementById('mat-hora').value,
           observacoes: document.getElementById('mat-obs').value
         };
         
         const resposta = await fetch(URL_API, { method: 'POST', body: JSON.stringify(dados), redirect: 'follow' });
         const retorno = await resposta.json();
         
-        if(retorno.status === "sucesso") {
-          alert('Evento da matilha registrado!');
+        if (retorno.status === "sucesso") {
+          alert('Ação registrada! Ela aparecerá no diário de todos os pets com Check-in hoje.');
           document.getElementById('mat-obs').value = '';
         } else {
-          alert('Erro: ' + retorno.mensagem);
+          alert('Erro retornado pela planilha: ' + retorno.mensagem);
         }
       } catch (erro) {
-        alert('Falha na ligação com o Google.');
+        alert('Erro interno no site: ' + erro.message);
       }
+      
       btn.innerText = "Salvar para Todos";
     }
 
