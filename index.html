@@ -91,8 +91,8 @@
   </div>
 
   <script>
-    // === COLE O SEU NOVO LINK AQUI DENTRO DAS ASPAS ===
-    const URL_API = "https://script.google.com/macros/s/AKfycbxpH489Ah1lJBfwqznBDYrGNd1TrtZcbjdfluRyUSn-Ii61v82av6r4AnZq6-2IY1b0/exec";
+    // URL atualizada com a nova versão gerada
+    const URL_API = "https://script.google.com/macros/s/AKfycbyvv_KKaRWMaolia1Uf-68g-B7pWWr6zOk8FmyVM9v5yizB06BwPpLwntYAsnpue5rO/exec";
 
     async function acessarDiario() {
       const nome = document.getElementById('input-pet').value;
@@ -126,15 +126,11 @@
           if (retorno.dados.length === 0) {
             timeline.innerHTML = '<p style="color: var(--muted); padding: 20px 0; text-align: center;">Nenhum registro encontrado nos últimos 7 dias.</p>';
           } else {
-            // Agora o 'retorno.dados' vem separado por dias
             retorno.dados.forEach(dia => {
-              
-              // Cria a etiqueta com a Data (ex: 15/05/2026)
               let dataHoje = new Date().toLocaleDateString("pt-BR");
               let textoData = dia.data === dataHoje ? "HOJE" : dia.data;
               timeline.innerHTML += `<div class="data-header">📅 ${textoData}</div>`;
               
-              // Adiciona os eventos daquele dia em baixo da etiqueta
               dia.eventos.forEach(item => {
                 let horaLimpa = item.horario;
                 if (typeof horaLimpa === 'string' && horaLimpa.includes('T')) {
